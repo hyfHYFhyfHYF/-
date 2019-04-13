@@ -1,0 +1,114 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include <iostream>
+#define MAXSIZE 100
+typedef int Status;
+typedef float ElemType;
+typedef struct{
+	ElemType data;
+	Status cur;//游标 
+}component,SLinkList[MAXSIZE];
+//函数的声明
+Status LocateELem_SL(SLinkList S,ElemType &e);
+void InitSpace_SL(SLinkList &space);
+Status Malloc_SL(SLinkList &space);
+void Free_SL(SLinkList &space,Status k);
+void difference(SLinkList &space,Status &S);
+//函数的定义 
+Status LocateELem_SL(SLinkList S,ElemType &e)//在静态线性链表中查找第一个值为e的元素， 返回位序 
+{
+	Status i;
+	i=S[0].cur;//i指示L的第一个结点
+	while(i!=0&&S[i].data!=e)
+	{
+		i=S[i].cur;//向后移动，相当于p=p->data	
+	}
+	return i; 
+} 
+void InitSpace_SL(SLinkList &space)
+{
+	Status i;
+	//将一维数组space中各分量链成一个备用链表，space[0].cur为头指针
+	//0表示空指针
+	for(i=0;i<MAXSIZE-1;i++)
+	{
+		space[i].cur=i+1; 
+	} 
+	space[MAXSIZE-1].cur=0;//尾指针为空 
+}
+Status Malloc_SL(SLinkList &space)//取一个结点
+{
+	Status i;
+	//若备用空间链表非空，则返回结点分配的结点下标，否则返回0
+	i=space[0].cur;
+	if(space[0].cur)
+	{
+		space[0].cur=space[i].cur;
+	}	
+	return i;
+} 
+void Free_SL(SLinkList &space,Status k)//将空闲结点链接在备用链表上 
+{
+	//将下标为k的空闲节点回收到备用链表
+	space[k].cur=space[0].cur;
+	space[0].cur=k;
+}
+void difference(SLinkList &space,Status &S)
+{
+	Status r,m,n,i,j,p,k;
+	ElemType b;
+	InitSpace_SL(space);//初始化备用空间
+	S=Malloc_SL(space);//生产S的头节点 
+	r=S;//r指向S的当前最后结点
+	printf("输入A和B的元素个数\n");
+	scanf("%d%d",&m,&n);//输入A和B的元素个数
+	printf("输入A的元素值\n");
+	for(j=1;j<=m;j++)//建立集合A的链表 
+	{
+		i=Malloc_SL(space);//分配结点 
+		scanf("%f",&space[i].data); //输入A的元素值
+		space[r].cur=i;//插入到表尾 
+		r=i; 
+	} 
+	space[r].cur=0;//尾结点的指针为空
+	printf("输入B的元素\n");
+	for(j=1;j<=n;j++)//依次输入B的元素，若不在当前表则插入，否则删除 
+	{
+		scanf("%f",b);
+		p=S;
+		k=space[S].cur;//k指向集合A中的第一个结点 
+		while(k!=space[r].cur && space[k].cur!=b)//在当前表中查找 
+		{
+			p=k;
+			k=space[k].cur;//k=k->next 
+		}
+		if(k==space[r].cur)//当前表中不存在该元素，插入在r所指结点之后，且r的位置不变 
+		{
+			i=Malloc_SL(space);
+			space[i].data=b;
+			space[i].cur=space[r].cur;
+			space[r].cur=i;
+		} 
+		else//该元素已在表中删除 
+		{
+			space[p].cur=space[k].cur;
+			Free_SL(space,k);
+			if(r==k)//若删除的是r所指的结点，则需要修改尾指针 
+			{
+				r=p;
+			}
+		}
+	 } 
+}
+
+int main(int argc, char** argv)
+{
+	SLinkList space;
+	Status s=0;
+	difference(space,s);
+	for(s=2;s<6;s++) 
+	{
+		printf("%4.2f ",space[s].data);
+	}
+	return 0;
+}
